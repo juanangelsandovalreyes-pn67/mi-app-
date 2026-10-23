@@ -1,0 +1,451 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HealthCheck | Medical Assistant</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  color: #f4f8ff;
+  background:
+    linear-gradient(120deg, rgba(3,15,33,.92), rgba(4,36,65,.76)),
+    url("https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=2000&q=85");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.app {
+  width: 100%;
+  max-width: 760px;
+  padding: 32px;
+  border: 1px solid #467ba5;
+  border-radius: 22px;
+  background: rgba(5, 24, 46, .94);
+  box-shadow: 0 20px 70px #0008;
+}
+
+.brand {
+  color: #65d7ff;
+  font-size: 13px;
+  font-weight: bold;
+  letter-spacing: 3px;
+}
+
+h1 { margin: 12px 0; font-size: 32px; }
+.subtitle { color: #b7cde1; line-height: 1.6; }
+
+.topline {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 28px;
+  font-size: 14px;
+  color: #c6d9ec;
+}
+
+.track {
+  height: 7px;
+  background: #273f59;
+  border-radius: 10px;
+  margin: 12px 0 28px;
+  overflow: hidden;
+}
+
+#bar {
+  height: 100%;
+  width: 20%;
+  background: #36baff;
+  transition: width .3s;
+}
+
+h2 { font-size: 22px; line-height: 1.5; }
+
+.options {
+  display: grid;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.option {
+  width: 100%;
+  text-align: left;
+  padding: 16px;
+  color: white;
+  background: #112d49;
+  border: 1px solid #42627f;
+  border-radius: 12px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: .2s;
+}
+
+.option:hover, .option.selected {
+  border-color: #43c4ff;
+  background: #17476b;
+}
+
+.option:focus-visible, button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 25px;
+}
+
+button.main {
+  flex: 1;
+  padding: 14px;
+  border: 0;
+  border-radius: 10px;
+  background: #35baff;
+  color: #061a2c;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button.secondary {
+  background: #263f58;
+  color: white;
+  border: 1px solid #53718d;
+}
+
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+.notice {
+  margin-top: 24px;
+  padding: 14px;
+  border-left: 3px solid #ffca72;
+  background: #392f26;
+  color: #ffe1ae;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.result { text-align: center; }
+.result-icon { font-size: 52px; margin-top: 20px; }
+
+.result-box {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 14px;
+  background: #102d47;
+  border: 1px solid #365a78;
+  text-align: left;
+  line-height: 1.7;
+}
+
+.hidden { display: none; }
+
+@media(max-width: 500px) {
+  .app { padding: 22px; }
+  h1 { font-size: 27px; }
+  h2 { font-size: 19px; }
+  .actions { flex-direction: column; }
+}
+</style>
+</head>
+
+<body>
+<main class="app">
+  <div class="brand">✚ HEALTHCHECK MEDICAL ASSISTANT</div>
+
+  <section id="quiz">
+    <h1>Let's Check Your Symptoms</h1>
+    <p class="subtitle">
+      Answer five questions about your symptoms, recent exposures,
+      insect bites, and general health. Your answers will help
+      identify possible explanations and appropriate next steps.
+    </p>
+
+    <div class="topline">
+      <span id="counter">Question 1 of 5</span>
+      <span id="percent">20%</span>
+    </div>
+
+    <div class="track"><div id="bar"></div></div>
+
+    <h2 id="question"></h2>
+    <div class="options" id="options"></div>
+
+    <div class="actions">
+      <button class="main secondary" id="back" type="button">
+        ← Back
+      </button>
+      <button class="main" id="next" type="button" disabled>
+        Next →
+      </button>
+    </div>
+
+    <div class="notice">
+      MEDICAL NOTICE: This tool cannot diagnose diseases.
+      Seek professional medical advice for concerning symptoms.
+      If you have trouble breathing, severe confusion, fainting,
+      or swelling of the tongue or throat, seek emergency care.
+    </div>
+  </section>
+
+  <section id="results" class="result hidden">
+    <div class="brand">ASSESSMENT COMPLETE</div>
+    <div class="result-icon" id="resultIcon">🩺</div>
+    <h1 id="resultTitle">Your Health Summary</h1>
+    <p class="subtitle" id="summary"></p>
+
+    <div class="result-box">
+      <strong>Possible explanation</strong>
+      <p id="explanation"></p>
+      <strong>Recommended next steps</strong>
+      <p id="recommendation"></p>
+    </div>
+
+    <div class="notice">
+      This result is not a confirmed diagnosis. Several conditions
+      can cause similar symptoms. A healthcare professional may
+      need to examine you or order tests.
+    </div>
+
+    <div class="actions">
+      <button class="main" id="restart" type="button">
+        Start New Assessment ↻
+      </button>
+    </div>
+  </section>
+</main>
+
+<script>
+const questions = [
+  {
+    text: "1. What is your main symptom right now?",
+    options: [
+      "Itching, redness, or swelling after an insect bite",
+      "Fever, cough, sore throat, or body aches",
+      "Redness, warmth, or pain around a cut or wound",
+      "Stomach pain, nausea, vomiting, or diarrhea"
+    ]
+  },
+  {
+    text: "2. Have you recently been exposed to any of these?",
+    options: [
+      "Mosquitoes, ticks, or other insects",
+      "Someone with a contagious illness",
+      "Dirty surfaces, contaminated water, or an open wound",
+      "Possibly contaminated food"
+    ]
+  },
+  {
+    text: "3. How long have you had your symptoms?",
+    options: [
+      "They started within the last few hours",
+      "They started one or two days ago",
+      "They have lasted several days or longer",
+      "I have no symptoms; I am checking a possible exposure"
+    ]
+  },
+  {
+    text: "4. Which description best matches your condition?",
+    options: [
+      "A small itchy bump or mild local rash",
+      "Fever, tiredness, or respiratory symptoms",
+      "Increasing redness, warmth, pus, or wound pain",
+      "Repeated vomiting, diarrhea, or abdominal discomfort"
+    ]
+  },
+  {
+    text: "5. How severe is the situation?",
+    options: [
+      "Mild; I can do my usual activities",
+      "Moderate; it affects some daily activities",
+      "Severe, worsening, or accompanied by a high fever",
+      "I have an emergency warning sign or feel seriously unwell"
+    ]
+  }
+];
+
+let current = 0;
+let answers = [];
+
+const $ = id => document.getElementById(id);
+
+function render() {
+  const q = questions[current];
+  $("counter").textContent =
+    `Question ${current + 1} of ${questions.length}`;
+  $("percent").textContent =
+    `${Math.round((current + 1) / questions.length * 100)}%`;
+  $("bar").style.width = `${(current + 1) / questions.length * 100}%`;
+  $("question").textContent = q.text;
+  $("options").replaceChildren();
+
+  q.options.forEach((label, index) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "option";
+    button.textContent = `${String.fromCharCode(65 + index)}. ${label}`;
+    button.setAttribute("aria-pressed", "false");
+
+    if (answers[current] === index) {
+      button.classList.add("selected");
+      button.setAttribute("aria-pressed", "true");
+    }
+
+    button.addEventListener("click", () => {
+      answers[current] = index;
+      render();
+    });
+
+    $("options").appendChild(button);
+  });
+
+  $("back").disabled = current === 0;
+  $("next").disabled = answers[current] === undefined;
+  $("next").textContent =
+    current === questions.length - 1 ? "View Results →" : "Next →";
+}
+
+function showResults() {
+  const mainSymptom = answers[0];
+  const exposure = answers[1];
+  const duration = answers[2];
+  const description = answers[3];
+  const severity = answers[4];
+
+  let title = "General Health Assessment";
+  let icon = "🩺";
+  let explanation =
+    "Your answers do not point to one specific cause. " +
+    "Many conditions have overlapping symptoms.";
+  let recommendation =
+    "Monitor your symptoms and arrange medical advice if they persist, " +
+    "worsen, or concern you.";
+
+  if (severity === 3) {
+    title = "Urgent Medical Assessment";
+    icon = "🚨";
+    explanation =
+      "You reported a possible emergency warning sign or feeling seriously unwell.";
+    recommendation =
+      "Seek emergency medical care now. Do not rely on this questionnaire " +
+      "to assess or rule out a serious condition.";
+  } else if (
+    mainSymptom === 0 &&
+    exposure === 0 &&
+    description === 0
+  ) {
+    title = "Possible Insect Bite Reaction";
+    icon = "🦟";
+    explanation =
+      "A local insect bite reaction or skin irritation is one possibility. " +
+      "Other skin conditions can look similar.";
+    recommendation =
+      "Avoid scratching and gently clean the area. Seek medical advice " +
+      "if redness spreads, pain increases, pus develops, or you develop a fever. " +
+      "Trouble breathing or swelling of the tongue or throat is an emergency.";
+  } else if (
+    mainSymptom === 1 &&
+    exposure === 1
+  ) {
+    title = "Possible Infectious Illness";
+    icon = "🦠";
+    explanation =
+      "A respiratory or other contagious infection is one possibility, " +
+      "but symptoms alone cannot identify the organism or confirm an infection.";
+    recommendation =
+      "Rest, drink fluids if you can, limit close contact while ill, " +
+      "and seek medical advice if symptoms worsen or you are concerned.";
+  } else if (
+    mainSymptom === 2 ||
+    description === 2 ||
+    exposure === 2
+  ) {
+    title = "Possible Skin or Wound Infection";
+    icon = "🩹";
+    explanation =
+      "Skin irritation or a wound infection may be possible, especially " +
+      "if redness, warmth, pain, or drainage is increasing.";
+    recommendation =
+      "Gently clean and cover an open wound. Seek prompt medical assessment " +
+      "for spreading redness, pus, increasing pain, or fever.";
+  } else if (
+    mainSymptom === 3 &&
+    (exposure === 3 || description === 3)
+  ) {
+    title = "Possible Gastrointestinal Illness";
+    icon = "🧫";
+    explanation =
+      "A gastrointestinal infection or food-related illness is one possibility. " +
+      "Other causes of digestive symptoms are also possible.";
+    recommendation =
+      "Take small, frequent sips of fluids if tolerated. Seek medical care " +
+      "for blood in vomit or stool, severe abdominal pain, dehydration, " +
+      "or persistent vomiting.";
+  } else if (duration === 3) {
+    title = "Exposure Check";
+    icon = "🔎";
+    explanation =
+      "You reported a possible exposure without current symptoms. " +
+      "Exposure alone does not mean that you have an infection.";
+    recommendation =
+      "Follow relevant hygiene and exposure guidance. Contact a healthcare " +
+      "professional if you suspect a serious exposure or develop symptoms.";
+  }
+
+  if (severity === 2) {
+    recommendation +=
+      " Because you described severe or worsening symptoms, seek prompt " +
+      "medical assessment today.";
+  }
+
+  $("quiz").classList.add("hidden");
+  $("results").classList.remove("hidden");
+  $("resultIcon").textContent = icon;
+  $("resultTitle").textContent = title;
+  $("summary").textContent =
+    "This is a preliminary educational assessment based on your answers.";
+  $("explanation").textContent = explanation;
+  $("recommendation").textContent = recommendation;
+}
+
+$("next").addEventListener("click", () => {
+  if (answers[current] === undefined) return;
+
+  if (current < questions.length - 1) {
+    current++;
+    render();
+  } else {
+    showResults();
+  }
+});
+
+$("back").addEventListener("click", () => {
+  if (current > 0) {
+    current--;
+    render();
+  }
+});
+
+$("restart").addEventListener("click", () => {
+  current = 0;
+  answers = [];
+  $("results").classList.add("hidden");
+  $("quiz").classList.remove("hidden");
+  render();
+});
+
+render();
+</script>
+</body>
+</html>
